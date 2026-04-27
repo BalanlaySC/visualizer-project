@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useReducer } from 'react'
 
 import { SEARCH_ALGORITHMS } from '../../../core/types/algorithms'
 import {
@@ -7,13 +7,8 @@ import {
   type PaintMode,
   type Theme,
 } from '../../../core/types/common'
-import {
-  SEARCH_GRID_ROWS,
-  applyPaintToGrid,
-  createInitialGrid,
-  getSearchGridColsForWidth,
-  selectGridStats,
-} from '../domain'
+import { SearchActions, computeNextColsForWidth, createInitialSearchState, searchReducer } from '../application'
+import { selectGridStats } from '../domain'
 import { Grid } from './components/Grid'
 
 const CELL_SIZE_PX = 28
@@ -23,37 +18,32 @@ type SearchPageProps = {
 }
 
 export function SearchPage({ theme }: SearchPageProps) {
-  const [cols, setCols] = useState(() =>
-    getSearchGridColsForWidth(window.innerWidth, { small: SMALL_BREAKPOINT, large: LARGE_BREAKPOINT }),
+  const breakpoints = useMemo(
+    () => ({ small: SMALL_BREAKPOINT, large: LARGE_BREAKPOINT }),
+    [],
   )
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState('')
-  const [paintMode, setPaintMode] = useState<PaintMode>('wall')
-  const [grid, setGrid] = useState(() => createInitialGrid(SEARCH_GRID_ROWS, cols))
-  const [isPainting, setIsPainting] = useState(false)
+
+  const [state, dispatch] = useReducer(
+    searchReducer,
+    undefined,
+    () => createInitialSearchState({ initialWidth: window.innerWidth, breakpoints }),
+  )
   const isDark = theme === 'dark'
 
-  const stats = useMemo(() => selectGridStats(grid), [grid])
+  const stats = useMemo(() => selectGridStats(state.grid), [state.grid])
 
   useEffect(() => {
     const handleResize = () => {
-      const nextCols = getSearchGridColsForWidth(window.innerWidth, {
-        small: SMALL_BREAKPOINT,
-        large: LARGE_BREAKPOINT,
-      })
-
-      setCols((prevCols) => {
-        if (prevCols === nextCols) return prevCols
-        setGrid(createInitialGrid(SEARCH_GRID_ROWS, nextCols))
-        return nextCols
-      })
+      const nextCols = computeNextColsForWidth(window.innerWidth, breakpoints)
+      dispatch(SearchActions.colsChanged(nextCols))
     }
 
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  }, [breakpoints])
 
   useEffect(() => {
-    const handlePointerUp = () => setIsPainting(false)
+    const handlePointerUp = () => dispatch(SearchActions.stopPainting())
     window.addEventListener('pointerup', handlePointerUp)
     window.addEventListener('pointercancel', handlePointerUp)
 
@@ -63,20 +53,16 @@ export function SearchPage({ theme }: SearchPageProps) {
     }
   }, [])
 
-  const paintCell = (rowIndex: number, colIndex: number) => {
-    setGrid((prev) => applyPaintToGrid(prev, paintMode, rowIndex, colIndex))
-  }
-
-  const resetGrid = () => setGrid(createInitialGrid(SEARCH_GRID_ROWS, cols))
+  const resetGrid = () => dispatch(SearchActions.resetGrid())
 
   const handleCellPointerDown = (rowIndex: number, colIndex: number) => {
-    setIsPainting(true)
-    paintCell(rowIndex, colIndex)
+    dispatch(SearchActions.startPainting())
+    dispatch(SearchActions.paintCell(rowIndex, colIndex))
   }
 
   const handleCellPointerEnter = (rowIndex: number, colIndex: number) => {
-    if (!isPainting) return
-    paintCell(rowIndex, colIndex)
+    if (!state.isPainting) return
+    dispatch(SearchActions.paintCell(rowIndex, colIndex))
   }
 
   return (
@@ -89,8 +75,8 @@ export function SearchPage({ theme }: SearchPageProps) {
         <label className="flex flex-col gap-2 text-sm">
           <span className={isDark ? 'text-[#9E9E9E]' : 'text-[#4A4A4A]'}>Selected Algorithm</span>
           <select
-            value={selectedAlgorithm}
-            onChange={(e) => setSelectedAlgorithm(e.target.value)}
+            value={state.selectedAlgorithm}
+            onChange={(e) => dispatch(SearchActions.algorithmChanged(e.target.value))}
             className={`rounded-lg border px-3 py-2 outline-none ring-[#98C379] focus:ring ${
               isDark
                 ? 'border-[#3A3A3A] bg-[#2A2A2A] text-[#E0E0E0]'
@@ -113,8 +99,8 @@ export function SearchPage({ theme }: SearchPageProps) {
             Node Tool - Click or hold and drag to paint
           </span>
           <select
-            value={paintMode}
-            onChange={(e) => setPaintMode(e.target.value as PaintMode)}
+            value={state.paintMode as PaintMode}
+            onChange={(e) => dispatch(SearchActions.paintModeChanged(e.target.value as PaintMode))}
             className={`rounded-lg border px-3 py-2 outline-none ring-[#98C379] focus:ring ${
               isDark
                 ? 'border-[#3A3A3A] bg-[#2A2A2A] text-[#E0E0E0]'
@@ -155,8 +141,8 @@ export function SearchPage({ theme }: SearchPageProps) {
       </section>
 
       <Grid
-        grid={grid}
-        cols={cols}
+        grid={state.grid}
+        cols={state.cols}
         cellSize={CELL_SIZE_PX}
         theme={theme}
         onCellPointerDown={handleCellPointerDown}
