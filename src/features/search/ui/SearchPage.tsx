@@ -4,62 +4,46 @@ import { SEARCH_ALGORITHMS } from '../../../core/types/algorithms'
 import {
   LARGE_BREAKPOINT,
   SMALL_BREAKPOINT,
-  type CellType,
   type PaintMode,
   type Theme,
 } from '../../../core/types/common'
+import {
+  SEARCH_GRID_ROWS,
+  applyPaintToGrid,
+  createInitialGrid,
+  getSearchGridColsForWidth,
+  selectGridStats,
+} from '../domain'
 import { Grid } from './components/Grid'
 
-const ROWS = 12
-const SMALL_SCREEN_COLS = 10
-const MEDIUM_SCREEN_COLS = 20
-const LARGE_SCREEN_COLS = 40
 const CELL_SIZE_PX = 28
-
-const createInitialGrid = (rows: number, cols: number) =>
-  Array.from({ length: rows }, () => Array.from({ length: cols }, () => 'empty' as CellType))
-
-const getColsForWidth = (width: number) => {
-  if (width < SMALL_BREAKPOINT) return SMALL_SCREEN_COLS
-  if (width < LARGE_BREAKPOINT) return MEDIUM_SCREEN_COLS
-  return LARGE_SCREEN_COLS
-}
 
 type SearchPageProps = {
   theme: Theme
 }
 
 export function SearchPage({ theme }: SearchPageProps) {
-  const [cols, setCols] = useState(() => getColsForWidth(window.innerWidth))
+  const [cols, setCols] = useState(() =>
+    getSearchGridColsForWidth(window.innerWidth, { small: SMALL_BREAKPOINT, large: LARGE_BREAKPOINT }),
+  )
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('')
   const [paintMode, setPaintMode] = useState<PaintMode>('wall')
-  const [grid, setGrid] = useState<CellType[][]>(createInitialGrid(ROWS, cols))
+  const [grid, setGrid] = useState(() => createInitialGrid(SEARCH_GRID_ROWS, cols))
   const [isPainting, setIsPainting] = useState(false)
   const isDark = theme === 'dark'
 
-  const stats = useMemo(() => {
-    let walls = 0
-    let startCount = 0
-    let endCount = 0
-
-    for (const row of grid) {
-      for (const node of row) {
-        if (node === 'wall') walls += 1
-        if (node === 'start') startCount += 1
-        if (node === 'end') endCount += 1
-      }
-    }
-
-    return { walls, startCount, endCount }
-  }, [grid])
+  const stats = useMemo(() => selectGridStats(grid), [grid])
 
   useEffect(() => {
     const handleResize = () => {
-      const nextCols = getColsForWidth(window.innerWidth)
+      const nextCols = getSearchGridColsForWidth(window.innerWidth, {
+        small: SMALL_BREAKPOINT,
+        large: LARGE_BREAKPOINT,
+      })
 
       setCols((prevCols) => {
         if (prevCols === nextCols) return prevCols
-        setGrid(createInitialGrid(ROWS, nextCols))
+        setGrid(createInitialGrid(SEARCH_GRID_ROWS, nextCols))
         return nextCols
       })
     }
@@ -79,41 +63,11 @@ export function SearchPage({ theme }: SearchPageProps) {
     }
   }, [])
 
-  const clearType = (nextGrid: CellType[][], type: CellType) => {
-    for (let r = 0; r < ROWS; r += 1) {
-      for (let c = 0; c < cols; c += 1) {
-        if (nextGrid[r][c] === type) nextGrid[r][c] = 'empty'
-      }
-    }
-  }
-
   const paintCell = (rowIndex: number, colIndex: number) => {
-    setGrid((prev) => {
-      const next = prev.map((row) => [...row])
-
-      if (paintMode === 'erase') {
-        next[rowIndex][colIndex] = 'empty'
-        return next
-      }
-
-      if (paintMode === 'start') {
-        clearType(next, 'start')
-        next[rowIndex][colIndex] = 'start'
-        return next
-      }
-
-      if (paintMode === 'end') {
-        clearType(next, 'end')
-        next[rowIndex][colIndex] = 'end'
-        return next
-      }
-
-      next[rowIndex][colIndex] = 'wall'
-      return next
-    })
+    setGrid((prev) => applyPaintToGrid(prev, paintMode, rowIndex, colIndex))
   }
 
-  const resetGrid = () => setGrid(createInitialGrid(ROWS, cols))
+  const resetGrid = () => setGrid(createInitialGrid(SEARCH_GRID_ROWS, cols))
 
   const handleCellPointerDown = (rowIndex: number, colIndex: number) => {
     setIsPainting(true)
