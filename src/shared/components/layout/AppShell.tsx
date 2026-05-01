@@ -14,7 +14,7 @@ type AppShellProps = {
 
 export function AppShell({
   theme,
-  title = 'Visualizer Project',
+  title = 'AIViz Studio',
   headerContent,
   onToggleTheme,
   children,
@@ -24,7 +24,7 @@ export function AppShell({
   return (
     <div className={`min-h-screen ${classes.app}`}>
       <header className={`border-b backdrop-blur ${classes.header}`}>
-        <nav className="mx-auto flex min-h-14 w-full min-w-[360px] items-center justify-between gap-3 px-4 py-2 sm:px-6">
+        <nav className="mx-auto flex min-h-14 w-full min-w-90 items-center justify-between gap-3 px-4 py-2 sm:px-6">
           <div className="flex items-center gap-3">
             <p
               className={`text-2xl font-bold uppercase tracking-[0.12em] sm:whitespace-nowrap ${classes.titleText}`}
@@ -41,7 +41,7 @@ export function AppShell({
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
         </nav>
       </header>
-      <main className="mx-auto w-full min-w-[360px] px-4 pb-8 sm:px-6">{children}</main>
+      <main className="mx-auto w-full min-w-90 px-4 pb-8 sm:px-6">{children}</main>
     </div>
   )
 }

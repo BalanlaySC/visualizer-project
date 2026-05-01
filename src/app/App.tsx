@@ -3,8 +3,8 @@ import { useState } from 'react'
 import { AppShell, ModeTabs } from '../shared/components'
 import { ALGORITHM_DOMAINS, type AlgorithmDomain } from '../core/types/algorithms'
 import type { Theme } from '../core/types/common'
-import { ClassificationPage } from '../features/classification/ClassificationPage'
-import { SearchPage } from '../features/search/SearchPage'
+import { ClassificationPage } from '../features/classification/ui/ClassificationPage'
+import { SearchPage } from '../features/search/ui/SearchPage'
 
 const routes = [
   ALGORITHM_DOMAINS.Search,
@@ -25,7 +25,7 @@ export default function App() {
           items={routes}
           active={activeRoute}
           onChange={(value) => setActiveRoute(value as AlgorithmDomain)}
-          disabledItems={[ALGORITHM_DOMAINS.Clustering]}
+          disabledItems={[ALGORITHM_DOMAINS.Classification, ALGORITHM_DOMAINS.Clustering]}
           theme={theme}
         />
       }
