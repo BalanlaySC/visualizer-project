@@ -13,12 +13,12 @@ Preserve current behavior while migrating to a feature-first layered architectur
 
 ## Phase Tracking
 - [x] Phase 0 - Baseline + Vitest + Guardrails
-- [ ] Phase 1 - Scaffold `app/core/shared`
-- [ ] Phase 2 - Extract search domain
-- [ ] Phase 3 - Consolidate search application layer
-- [ ] Phase 4 - Isolate algorithms in infrastructure
-- [ ] Phase 5 - Recompose search UI
-- [ ] Phase 6 - Bootstrap classification
+- [x] Phase 1 - Scaffold `app/core/shared`
+- [x] Phase 2 - Extract search domain
+- [x] Phase 3 - Consolidate search application layer
+- [x] Phase 4 - Isolate algorithms in infrastructure
+- [x] Phase 5 - Recompose search UI
+- [x] Phase 6 - Bootstrap classification
 - [ ] Phase 7 - Enforce and cleanup
 
 ## Guardrails (Initial)
