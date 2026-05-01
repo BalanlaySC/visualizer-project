@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 
-import { themeClasses } from '../../core/constants/theme'
-import type { Theme } from '../../core/types/common'
-import { ThemeToggle } from '../Theme/ThemeToggle'
+import { themeClasses } from '../../../core/constants/theme'
+import type { Theme } from '../../../core/types/common'
+import { ThemeToggle } from '../theme/ThemeToggle'
 
 type AppShellProps = {
   theme: Theme

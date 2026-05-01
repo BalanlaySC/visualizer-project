@@ -1,8 +1,8 @@
 import { Menu, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
-import { themeClasses } from '../../core/constants/theme'
-import { SMALL_BREAKPOINT, type Theme } from '../../core/types/common'
+import { themeClasses } from '../../../core/constants/theme'
+import { SMALL_BREAKPOINT, type Theme } from '../../../core/types/common'
 
 const showMobileMenuForWidth = (width: number) => {
   return width < SMALL_BREAKPOINT

@@ -19,7 +19,7 @@ Preserve current behavior while migrating to a feature-first layered architectur
 - [x] Phase 4 - Isolate algorithms in infrastructure
 - [x] Phase 5 - Recompose search UI
 - [x] Phase 6 - Bootstrap classification
-- [ ] Phase 7 - Enforce and cleanup
+- [x] Phase 7 - Enforce and cleanup
 
 ## Guardrails (Initial)
 - Keep domain layer pure (no `react`, no browser globals like `window` and `document`).
